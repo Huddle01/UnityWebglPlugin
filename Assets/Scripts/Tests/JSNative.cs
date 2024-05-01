@@ -16,7 +16,7 @@ public class JSNative
     internal static extern int NewTexture();
 
     [DllImport("__Internal")]
-    internal static extern void AttachVideo(string nativeHandle, int m_TextureId);
+    internal static extern void AttachVideo(string peerId, int m_TextureId);
 
     [DllImport("__Internal")]
     internal static extern void InitHuddle01WebSdk(string appIdjson);
@@ -29,6 +29,9 @@ public class JSNative
 
     [DllImport("__Internal")]
     internal static extern void MuteMic(bool shouldMute,string metaData);
+
+    [DllImport("__Internal")]
+    internal static extern void EnableVideo(bool enable, string metaData);
 
     [DllImport("__Internal")]
     internal static extern void SendTextMessage(string message);

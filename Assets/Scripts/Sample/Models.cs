@@ -18,6 +18,8 @@ public class PeerMetadata
     public string PeerId;
     [JsonProperty("muteStatus")]
     public bool MuteStatus;
+    [JsonProperty("videoStatus")]
+    public bool VideoStatus;
     [JsonProperty("name")]
     public string Name;
 }

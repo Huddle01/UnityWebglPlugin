@@ -97,26 +97,46 @@
                 // remote peer on stream available event
                 tempRemotePeer.on("stream-playable", async function(data) {
                     console.log("stream-playable : ",data);
-                    const audioElem = document.createElement("audio");
-                    audioElem.id = tempRemotePeer.peerId;
-
-                    if(!data.consumer.track)
+                    if(data.label == "audio")
                     {
-                        return console.log("track not found");    
+                        const audioElem = document.createElement("audio");
+                        audioElem.id = tempRemotePeer.peerId + "_audio";
+
+                        if(!data.consumer.track)
+                        {
+                            return console.log("track not found");    
+                        }
+                        
+                        const stream  = new MediaStream([data.consumer.track]);
+                        console.log("Stream  : ",stream);
+                        audioElem.srcObject = stream;
+                        audioElem.play();
+
+                    }else if(data.label == "video")
+                    {   
+                        if(!data.consumer.track)
+                        {
+                            return console.log("track not found");    
+                        }
+
+                        var videoElem = document.createElement("video");
+                        videoElem.id = tempRemotePeer.peerId + "_video";
+                        console.log("video created : ",videoElem.id);
+                        document.body.appendChild(videoElem);
+
+                        const videoStream  = new MediaStream([data.consumer.track]);
+                        videoElem.srcObject = videoStream;
+                        videoElem.play();
+                        SendMessage("Huddle01Init", "ResumeVideo",tempRemotePeer.peerId);
                     }
-                    const stream  = new MediaStream([data.consumer.track]);
-                    console.log("Stream  : ",stream);
-                    audioElem.srcObject = stream;
-                    audioElem.play();
 
                 });
                 
                 // remote peer on stream closed event
-                tempRemotePeer.off("stream-closed", function () {
+                tempRemotePeer.on("stream-closed", function (data) {
                     
+                    console.log("stream-closed : ",data);
                     const audioElem = document.getElementById(tempRemotePeer.peerId);
-
-                    audioElem.srcObject = null;
                     audioElem.remove();
                 });
 
@@ -159,43 +179,66 @@
                 return console.log("track not found");    
             }
             const stream  = new MediaStream([data.consumer.track]);
-
-            //audioElem.srcObject = stream;
-            //audioElem.play();
+            audioElem.play();
         });
 
         remotePeer.on("stream-playable", async function(data) {
-            console.log("stream-playable : ",data);
-            const audioElem = document.createElement("audio");
-            audioElem.id = remotePeer.peerId;
 
-            if(!data.consumer.track)
+            console.log("stream-playable : ",data);
+            if(data.label == "audio")
             {
-                return console.log("track not found");    
+                const audioElem = document.createElement("audio");
+                audioElem.id = remotePeer.peerId + "_audio";
+
+                if(!data.consumer.track)
+                {
+                    return console.log("track not found");    
+                }
+                
+                const stream  = new MediaStream([data.consumer.track]);
+                console.log("Stream  : ",stream);
+                audioElem.srcObject = stream;
+                audioElem.play();
+
+            }else if(data.label == "video")
+            {
+                var videoElem = document.createElement("video");
+                videoElem.id = remotePeer.peerId + "_video";
+                console.log("video created : ",videoElem.id);
+                document.body.appendChild(videoElem);
+                const videoStream  = new MediaStream([data.consumer.track]);
+                videoElem.srcObject = videoStream;
+                videoElem.play();
+                SendMessage("Huddle01Init", "ResumeVideo",remotePeer.peerId);
             }
+
             
-            const stream  = new MediaStream([data.consumer.track]);
-            console.log("Stream  : ",stream);
-            audioElem.srcObject = stream;
-            audioElem.play();
         });
         
-        remotePeer.off("stream-closed", function () {
-            console.log("Remote Peer Stream is closed.");
-        });
+            remotePeer.on("stream-closed", function (data) {
+                console.log("Remote Peer Stream is closed.",data);
+            });
         
         });
 
         //peer-left
         room.on("peer-left", function (peerId) {
             console.log(" peer-left Peer ID:", peerId);
+            //remove audio element
+            var audioElem = document.getElementById(peerId+"_audio");
 
-            var audioElem = document.getElementById(peerId);
-
-            if(!audio)
+            if(!audioElem)
             {
                 audioElem.srcObject = null;
                 audioElem.remove();
+            }
+
+            //remove audio element
+            var videoElem = document.getElementById(peerId + "_video");
+
+            if(!videoElem)
+            {
+                videoElem.remove();
             }
 
             // delete associated 
@@ -221,9 +264,33 @@
         huddleClient.localPeer.updateMetadata({ 
             peerId: metadata.peerId,
             muteStatus: metadata.muteStatus,
+            videoStatus : metadata.videoStatus,
             name : metadata.name
         });
 
+    },
+
+    EnableVideo : async function(enableVideo,metadataNativ)
+    {
+        var metadata = JSON.parse(UTF8ToString(metadataNativ));
+        console.log("EnableVideo metadata name val : ",UTF8ToString(metadataNativ));
+        
+        if(enableVideo)
+        {
+            //const producer = await huddleClient.localPeer.produce({ label: "video", stream: mediaStream, appData });
+            await huddleClient.localPeer.enableVideo();
+        }else
+        {
+            //const producer = await huddleClient.localPeer.stopProducing({ label: "video" });
+            await huddleClient.localPeer.disableVideo();
+        }
+
+        huddleClient.localPeer.updateMetadata({ 
+            peerId: metadata.peerId,
+            muteStatus: metadata.muteStatus,
+            videoStatus : metadata.videoStatus,
+            name : metadata.name
+        });
     },
     
     LeaveRoom : function()
@@ -265,11 +332,12 @@
         SendMessage("Huddle01Init", "OnLocalPeerIdReceived",peerId);
     },
 
-    AttachVideo: function (id, texId) {
+    AttachVideo: function (peerId, texId) {
         var tex = GL.textures[texId];
         var lastTime = -1;
-        console.log("video id " + UTF8ToString(id));
-        var initialVideo = getVideoElement(UTF8ToString(id));
+        var peerIdString = UTF8ToString(peerId);
+        console.log("video id " + UTF8ToString(peerId) + "_video");
+        var initialVideo = document.getElementById(UTF8ToString(peerId) + "_video");
         initialVideo.style.opacity = 0;
         initialVideo.style.width = 0;
         initialVideo.style.height = 0;
@@ -280,9 +348,11 @@
             initialVideo.play();
         });
  
-        document.body.appendChild(initialVideo);
-        var updateVideo = function () {
-            var video = getVideoElement(id);
+        //document.body.appendChild(initialVideo);
+        var updateVideo = function (peerIdVal,textureId) {
+            console.log(peerIdVal);
+            console.log("UpdateVideo : " ,peerIdVal + "_video")
+            var video = document.getElementById(peerIdVal + "_video");
             if (video === undefined) {
                 initialVideo.remove();
                 return;
@@ -303,10 +373,10 @@
                 GLctx.texParameteri(GLctx.TEXTURE_2D, GLctx.TEXTURE_WRAP_T, GLctx.CLAMP_TO_EDGE);
             }
             
-            requestAnimationFrame(updateVideo);
+            requestAnimationFrame(function(){updateVideo(peerIdVal,textureId)});
         };
         
-        requestAnimationFrame(updateVideo);
+        requestAnimationFrame(function(){updateVideo(peerIdString,tex)});
     },
 };
 
