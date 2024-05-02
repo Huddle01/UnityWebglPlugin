@@ -115,10 +115,10 @@ namespace Huddle01
             PeerLeft?.Invoke(peerInfo);
         }
 
-        public void OnPeerMute(string peerInfo)
+        public void OnPeerMute(string peerId)
         {
-            Debug.Log($"OnPeerMute {peerInfo}");
-            PeerMuted?.Invoke(peerInfo);
+            Debug.Log($"OnPeerMute {peerId}");
+            PeerMuted?.Invoke(peerId);
         }
 
         public void OnRoomClosed()

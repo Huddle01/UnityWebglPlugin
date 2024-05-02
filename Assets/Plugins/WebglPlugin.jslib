@@ -3,6 +3,7 @@
     huddleClient: null,
     room : null,
     huddleToken:null,
+    localStream : null,
     
 
     // Video Receive
@@ -89,8 +90,8 @@
                     }
                     const stream  = new MediaStream([data.consumer.track]);
 
-                    //audioElem.srcObject = stream;
-                    //audioElem.play();
+                    audioElem.srcObject = stream;
+                    audioElem.play();
 
                 });
 
@@ -135,9 +136,29 @@
                 // remote peer on stream closed event
                 tempRemotePeer.on("stream-closed", function (data) {
                     
-                    console.log("stream-closed : ",data);
-                    const audioElem = document.getElementById(tempRemotePeer.peerId);
-                    audioElem.remove();
+                    if(data.label == "audio")
+                    {
+                        var audioElem = document.getElementById(tempRemotePeer.peerId+"_audio");
+                        if(audioElem)
+                        {
+                            audioElem.srcObject = null;
+                            audioElem.remove();
+                        }
+
+                        SendMessage("Huddle01Init", "OnPeerMute",tempRemotePeer.peerId)
+
+                    }else if(data.label == "video")
+                    {
+                        var videoElem = document.getElementById(tempRemotePeer.peerId + "_video");
+
+                        if(videoElem)
+                        {
+                            videoElem.remove();
+                        }
+
+                        SendMessage("Huddle01Init", "StopVideo",tempRemotePeer.peerId)
+
+                    }
                 });
 
                 //metadata already exist
@@ -169,19 +190,6 @@
 
         });
         
-        remotePeer.on("stream-available", async function(data) {
-            console.log("stream-available : ",data);
-            const audioElem = document.createElement("audio");
-            audioElem.id = remotePeer.peerId;
-
-            if(!data.consumer.track)
-            {
-                return console.log("track not found");    
-            }
-            const stream  = new MediaStream([data.consumer.track]);
-            audioElem.play();
-        });
-
         remotePeer.on("stream-playable", async function(data) {
 
             console.log("stream-playable : ",data);
@@ -211,13 +219,35 @@
                 videoElem.play();
                 SendMessage("Huddle01Init", "ResumeVideo",remotePeer.peerId);
             }
-
-            
         });
         
-            remotePeer.on("stream-closed", function (data) {
-                console.log("Remote Peer Stream is closed.",data);
-            });
+        remotePeer.on("stream-closed", function (data) {
+            console.log("Remote Peer Stream is closed.",data);
+
+            if(data.label == "audio")
+            {
+                    var audioElem = document.getElementById(remotePeer.peerId+"_audio");
+                    if(audioElem)
+                    {
+                        audioElem.srcObject = null;
+                        audioElem.remove();
+                    }
+
+                    SendMessage("Huddle01Init", "OnPeerMute",remotePeer.peerId)
+
+            }else if(data.label == "video")
+            {
+                var videoElem = document.getElementById(remotePeer.peerId + "_video");
+
+                if(videoElem)
+                {
+                    videoElem.remove();
+                }
+
+                SendMessage("Huddle01Init", "StopVideo",remotePeer.peerId)
+
+            }
+        });
         
         });
 
@@ -233,7 +263,7 @@
                 audioElem.remove();
             }
 
-            //remove audio element
+            //remove video element
             var videoElem = document.getElementById(peerId + "_video");
 
             if(!videoElem)
@@ -278,11 +308,29 @@
         if(enableVideo)
         {
             //const producer = await huddleClient.localPeer.produce({ label: "video", stream: mediaStream, appData });
-            await huddleClient.localPeer.enableVideo();
+            localStream = await huddleClient.localPeer.enableVideo();
+
+            var videoElem = document.createElement("video");
+            videoElem.id = huddleClient.localPeer.peerId + "_video";
+            console.log("video created : ",videoElem.id);
+            document.body.appendChild(videoElem);
+
+            videoElem.srcObject = localStream;
+            videoElem.play();
+
+            SendMessage("Huddle01Init", "ResumeVideo",huddleClient.localPeer.peerId);
         }else
         {
-            //const producer = await huddleClient.localPeer.stopProducing({ label: "video" });
             await huddleClient.localPeer.disableVideo();
+
+            var videoElem = document.getElementById(huddleClient.localPeer.peerId + "_video");
+
+            if(videoElem)
+            {
+                videoElem.remove();
+            }
+
+            SendMessage("Huddle01Init", "StopVideo",huddleClient.localPeer.peerId);
         }
 
         huddleClient.localPeer.updateMetadata({ 
@@ -350,10 +398,10 @@
  
         //document.body.appendChild(initialVideo);
         var updateVideo = function (peerIdVal,textureId) {
-            console.log(peerIdVal);
-            console.log("UpdateVideo : " ,peerIdVal + "_video")
+            
             var video = document.getElementById(peerIdVal + "_video");
-            if (video === undefined) {
+
+            if (!video || video === undefined) {
                 initialVideo.remove();
                 return;
             }

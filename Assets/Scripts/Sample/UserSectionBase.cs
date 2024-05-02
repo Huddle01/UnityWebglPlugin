@@ -53,6 +53,11 @@ namespace Huddle01.Sample
             _mutedIcon.SetActive(true);
         }
 
+        public void MuteUser() 
+        {
+            SetMuteIcon(true);
+        }
+
         public void UpdateMetadata(PeerMetadata peerMetaData)
         {
             _userInfo.Metadata = peerMetaData;
@@ -87,10 +92,12 @@ namespace Huddle01.Sample
         public void StopVideo() 
         {
             isVideoPlaying = false;
+            _videoTexture.gameObject.SetActive(false);
         }
 
         public void ResumeVideo() 
         {
+            _videoTexture.gameObject.SetActive(true);
             JSNative.AttachVideo(_userInfo.PeerId, m_TextureId);
             isVideoPlaying = true;
         }

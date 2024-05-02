@@ -1532,11 +1532,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed1c2d80da676d54b8b2e0d1ed7b933f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _projectId: KkMMaNmkB5f2zDKco57Z3_i-ZKgnvBPx
-  _apiKey: k_AHxooAiSbiWc12hZiFC6koEGa_s7m5
+  _projectId: 
+  _apiKey: 
   _userSectionPrefab: {fileID: 4758537280208412610, guid: 00e15f4c3f5672b42829aab22cda856e, type: 3}
   _userSectionContentHolder: {fileID: 493422166}
-  _roomId: pjh-zsfi-zci
+  _roomId: 
   _userSectionSection: {fileID: 493422165}
   _joinRomSection: {fileID: 69277601}
   _userOptions: {fileID: 1891519957}

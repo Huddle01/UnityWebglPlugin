@@ -87,9 +87,27 @@ namespace Huddle01.Sample
             DestroyAllChildren(_userSectionContentHolder);
         }
 
-        private void OnPeerMuted(string peerInfo)
+        private void OnPeerMuted(string peerId)
         {
-            //Get metadata
+            UserSectionBase userSectionRef = _selfUserSection.GetComponent<UserSectionBase>();
+
+            if (userSectionRef.UserInfo.PeerId == peerId)
+            {
+                return;
+            }
+
+            //check for other peer
+            GameObject peerSection = null;
+
+            if (PeersMap.TryGetValue(peerId, out peerSection))
+            {
+                Debug.Log($"OnPeerMetaDataUpdated : {peerSection.name}");
+                peerSection.GetComponent<UserSectionBase>().MuteUser();
+            }
+            else
+            {
+                Debug.LogError("Peer not found");
+            }
 
         }
 
@@ -186,6 +204,7 @@ namespace Huddle01.Sample
 
             if (userSectionRef.UserInfo.PeerId == peerId)
             {
+                userSectionRef.StopVideo();
                 return;
             }
 
@@ -211,6 +230,7 @@ namespace Huddle01.Sample
 
             if (userSectionRef.UserInfo.PeerId == peerId)
             {
+                userSectionRef.ResumeVideo();
                 return;
             }
 
