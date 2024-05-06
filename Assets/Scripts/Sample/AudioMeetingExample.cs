@@ -32,8 +32,6 @@ namespace Huddle01.Sample
         private string _token;
         public string Token => _token;
 
-        private const string _joinRoomTokenApi = "https://api.huddle01.com/api/v1/join-room-token";
-
         [Header("Sections")]
         [SerializeField]
         private GameObject _userSectionSection;
@@ -47,6 +45,7 @@ namespace Huddle01.Sample
         private TMP_InputField _nameInputFeild;
 
         private bool _selfMicMuteStatus = true;
+        private bool _selfVideoEnabled = false;
 
 
         void Start()
@@ -64,7 +63,10 @@ namespace Huddle01.Sample
             Huddle01Init.PeerMuted += OnPeerMuted;
             Huddle01Init.RoomClosed += OnRoomClosed;
             Huddle01Init.PeerMetadata += OnPeerMetaDataUpdated;
+            Huddle01Init.OnResumePeerVideo += OnPeerVideoResume;
+            Huddle01Init.OnStopPeerVideo += OnPeerVideoStop;
         }
+
 
         private void OnDisable()
         {
@@ -75,6 +77,8 @@ namespace Huddle01.Sample
             Huddle01Init.PeerMuted -= OnPeerMuted;
             Huddle01Init.RoomClosed -= OnRoomClosed;
             Huddle01Init.PeerMetadata -= OnPeerMetaDataUpdated;
+            Huddle01Init.OnResumePeerVideo -= OnPeerVideoResume;
+            Huddle01Init.OnStopPeerVideo -= OnPeerVideoStop;
         }
 
         #region Callbacks
@@ -83,9 +87,27 @@ namespace Huddle01.Sample
             DestroyAllChildren(_userSectionContentHolder);
         }
 
-        private void OnPeerMuted(string peerInfo)
+        private void OnPeerMuted(string peerId)
         {
-            //Get metadata
+            UserSectionBase userSectionRef = _selfUserSection.GetComponent<UserSectionBase>();
+
+            if (userSectionRef.UserInfo.PeerId == peerId)
+            {
+                return;
+            }
+
+            //check for other peer
+            GameObject peerSection = null;
+
+            if (PeersMap.TryGetValue(peerId, out peerSection))
+            {
+                Debug.Log($"OnPeerMetaDataUpdated : {peerSection.name}");
+                peerSection.GetComponent<UserSectionBase>().MuteUser();
+            }
+            else
+            {
+                Debug.LogError("Peer not found");
+            }
 
         }
 
@@ -143,6 +165,7 @@ namespace Huddle01.Sample
             }
             userSectionRef.UserInfo.Metadata.Name = _nameInputFeild.text;
             userSectionRef.UserInfo.Metadata.MuteStatus = false;
+            userSectionRef.UserInfo.Metadata.VideoStatus = false;
             userSectionRef.UserInfo.Metadata.PeerId = peerId;
             UpdateLocalPeerMetaData(userSectionRef.UserInfo.Metadata);
             userSectionRef.UpdateMetadata(userSectionRef.UserInfo.Metadata);
@@ -174,6 +197,59 @@ namespace Huddle01.Sample
             }
         }
 
+
+        private void OnPeerVideoStop(string peerId)
+        {
+            UserSectionBase userSectionRef = _selfUserSection.GetComponent<UserSectionBase>();
+
+            if (userSectionRef.UserInfo.PeerId == peerId)
+            {
+                userSectionRef.StopVideo();
+                return;
+            }
+
+            //check for other peer
+            GameObject peerSection = null;
+            Debug.Log($"OnPeerVideoStop : {peerId}");
+
+            if (PeersMap.TryGetValue(peerId, out peerSection))
+            {
+                Debug.Log($"OnPeerMetaDataUpdated : {peerSection.name}");
+                peerSection.GetComponent<UserSectionBase>().StopVideo();
+            }
+            else
+            {
+                Debug.LogError("Peer not found");
+            }
+
+        }
+
+        private void OnPeerVideoResume(string peerId)
+        {
+            UserSectionBase userSectionRef = _selfUserSection.GetComponent<UserSectionBase>();
+
+            if (userSectionRef.UserInfo.PeerId == peerId)
+            {
+                userSectionRef.ResumeVideo();
+                return;
+            }
+
+            //check for other peer
+            GameObject peerSection = null;
+            Debug.Log($"OnPeerVideoStop : {peerId}");
+
+            if (PeersMap.TryGetValue(peerId, out peerSection))
+            {
+                Debug.Log($"OnPeerMetaDataUpdated : {peerSection.name}");
+                peerSection.GetComponent<UserSectionBase>().ResumeVideo();
+            }
+            else
+            {
+                Debug.LogError("Peer not found");
+            }
+        }
+
+
         #endregion
 
         #region Main Functions
@@ -200,9 +276,26 @@ namespace Huddle01.Sample
             Huddle01Init.Instance.MuteMic(shouldMute, userSectionRef.UserInfo.Metadata);
         }
 
+
+        public void EnableVideoStreaming(bool enableVideo) 
+        {
+            _selfVideoEnabled = enableVideo;
+            UserSectionBase userSectionRef = _selfUserSection.GetComponent<UserSectionBase>();
+            Debug.Log($"Mute mic metadata : {JsonConvert.SerializeObject(userSectionRef.UserInfo.Metadata)}");
+            userSectionRef.UserInfo.Metadata.VideoStatus = enableVideo;
+            userSectionRef.UpdateMetadata(userSectionRef.UserInfo.Metadata);
+            Huddle01Init.Instance.EnableVideo(enableVideo, userSectionRef.UserInfo.Metadata);
+
+        }
+
         public void OnMuteMicClicked()
         {
             MuteMic(!_selfMicMuteStatus);
+        }
+
+        public void EnableVideo() 
+        {
+            EnableVideoStreaming(!_selfVideoEnabled);
         }
 
         public void LeaveRoom()

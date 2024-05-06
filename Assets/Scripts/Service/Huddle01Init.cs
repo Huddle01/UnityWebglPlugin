@@ -18,6 +18,8 @@ namespace Huddle01
         public delegate void RoomClosedEventHandler();
         public delegate void PeerMetadataUpdatedEventHandler(PeerMetadata peerMetadata);
         public delegate void JoinRoomEventHandler();
+        public delegate void ResumePeerVideoEventHandler(string peerId);
+        public delegate void StopPeerVideoEventHandler(string peerId);
 
         public static event LocalPeerIdEventHandler LocalPeerId;
         public static event PeerAddedEventHandler PeerAdded;
@@ -26,6 +28,8 @@ namespace Huddle01
         public static event RoomClosedEventHandler RoomClosed;
         public static event PeerMetadataUpdatedEventHandler PeerMetadata;
         public static event JoinRoomEventHandler OnJoinRoom;
+        public static event ResumePeerVideoEventHandler OnResumePeerVideo;
+        public static event StopPeerVideoEventHandler OnStopPeerVideo;
 
         private string _projectId;
         private string _roomId;
@@ -56,6 +60,12 @@ namespace Huddle01
         {
             Debug.Log($"Mute mic : {JsonConvert.SerializeObject(metadata)}");
             JSNative.MuteMic(shouldMute, JsonConvert.SerializeObject(metadata));
+        }
+
+        public void EnableVideo(bool enable, PeerMetadata metadata) 
+        {
+            Debug.Log($"EnableVideo : {JsonConvert.SerializeObject(metadata)}");
+            JSNative.EnableVideo(enable, JsonConvert.SerializeObject(metadata));
         }
 
         public void SendTextMessage(string message)
@@ -105,10 +115,10 @@ namespace Huddle01
             PeerLeft?.Invoke(peerInfo);
         }
 
-        public void OnPeerMute(string peerInfo)
+        public void OnPeerMute(string peerId)
         {
-            Debug.Log($"OnPeerMute {peerInfo}");
-            PeerMuted?.Invoke(peerInfo);
+            Debug.Log($"OnPeerMute {peerId}");
+            PeerMuted?.Invoke(peerId);
         }
 
         public void OnRoomClosed()
@@ -122,6 +132,16 @@ namespace Huddle01
             Debug.Log($"peerInfo {peerInfo}");
             PeerMetadata response = JsonConvert.DeserializeObject<PeerMetadata>(peerInfo);
             PeerMetadata?.Invoke(response);
+        }
+
+        public void ResumeVideo(string peerId) 
+        {
+            OnResumePeerVideo?.Invoke(peerId);
+        }
+
+        public void StopVideo(string peerId) 
+        {
+            OnStopPeerVideo?.Invoke(peerId);
         }
 
         #endregion

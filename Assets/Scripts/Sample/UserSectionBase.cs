@@ -4,6 +4,8 @@ using UnityEngine;
 using TMPro;
 using System;
 using Newtonsoft.Json;
+using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 namespace Huddle01.Sample
 {
@@ -22,10 +24,38 @@ namespace Huddle01.Sample
         [SerializeField]
         private GameObject _unmutedIcon;
 
+        [SerializeField]
+        private RawImage _videoTexture;
+
+        public Texture2D Texture { get; private set; }
+
+        public bool isVideoPlaying=false;
+
+        private int m_TextureId =1;
+
+        private void Start()
+        {
+            GetNewTextureId();
+        }
+
+
+        private void Update()
+        {
+            if (isVideoPlaying) 
+            {
+                SetupTexture();
+            }
+        }
+
         public void Setup(HuddleUserInfo userInfo)
         {
             _userInfo = userInfo;
             _mutedIcon.SetActive(true);
+        }
+
+        public void MuteUser() 
+        {
+            SetMuteIcon(true);
         }
 
         public void UpdateMetadata(PeerMetadata peerMetaData)
@@ -39,6 +69,37 @@ namespace Huddle01.Sample
         {
             _mutedIcon.SetActive(muted);
             _unmutedIcon.SetActive(!muted);
+        }
+
+        public void GetNewTextureId() 
+        {
+            m_TextureId = JSNative.NewTexture();
+        }
+
+        public void SetupTexture() 
+        {
+            if (Texture != null)
+                Object.Destroy(Texture);
+            Texture = Texture2D.CreateExternalTexture(1280, 720, TextureFormat.RGBA32, false, true, (IntPtr)m_TextureId);
+            _videoTexture.texture = Texture;
+        }
+
+        public void AttachVideo() 
+        {
+            JSNative.AttachVideo(_userInfo.PeerId, m_TextureId);
+        }
+
+        public void StopVideo() 
+        {
+            isVideoPlaying = false;
+            _videoTexture.gameObject.SetActive(false);
+        }
+
+        public void ResumeVideo() 
+        {
+            _videoTexture.gameObject.SetActive(true);
+            JSNative.AttachVideo(_userInfo.PeerId, m_TextureId);
+            isVideoPlaying = true;
         }
     }
 }
