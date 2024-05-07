@@ -20,6 +20,7 @@ namespace Huddle01
         public delegate void JoinRoomEventHandler();
         public delegate void ResumePeerVideoEventHandler(string peerId);
         public delegate void StopPeerVideoEventHandler(string peerId);
+        public delegate void MessageReceivedEventHandler(string data);
 
         public static event LocalPeerIdEventHandler LocalPeerId;
         public static event PeerAddedEventHandler PeerAdded;
@@ -30,6 +31,7 @@ namespace Huddle01
         public static event JoinRoomEventHandler OnJoinRoom;
         public static event ResumePeerVideoEventHandler OnResumePeerVideo;
         public static event StopPeerVideoEventHandler OnStopPeerVideo;
+        public static event MessageReceivedEventHandler OnMessageReceived;
 
         private string _projectId;
         private string _roomId;
@@ -142,6 +144,12 @@ namespace Huddle01
         public void StopVideo(string peerId) 
         {
             OnStopPeerVideo?.Invoke(peerId);
+        }
+
+        public void MessageReceived(string data)
+        {
+            Debug.Log($"Message received : {data}");
+            OnMessageReceived?.Invoke(data);
         }
 
         #endregion

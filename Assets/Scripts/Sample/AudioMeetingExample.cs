@@ -304,6 +304,11 @@ namespace Huddle01.Sample
             DestroyAllChildren(_userSectionContentHolder);
         }
 
+        public void SendMessageToRoom() 
+        {
+            JSNative.SendTextMessage("Hello guyzz");
+        }
+
         #endregion
 
         #region Generel helpers
