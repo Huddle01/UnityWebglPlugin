@@ -48,4 +48,25 @@ public class JSNative
     [DllImport("__Internal")]
     internal static extern string GetRemotePeerMetaData(string peerId);
 
+    [DllImport("__Internal")]
+    internal static extern string SetUpForSpatialCommForPeer(string peerId);
+
+    [DllImport("__Internal")]
+    internal static extern string SetUpForSpatialComm();
+
+    [DllImport("__Internal")]
+    internal static extern string UpdateListenerPosition(float PosX, float PosY, float PosZ);
+
+    [DllImport("__Internal")]
+    internal static extern string UpdateListenerRotation(float RotX, float RotY, float RotZ);
+
+    [DllImport("__Internal")]
+    internal static extern string UpdatePeerPosition(string peerId,float PosX, float PosY, float PosZ);
+
+    [DllImport("__Internal")]
+    internal static extern string UpdatePeerRotation(string peerId,float RotX, float RotY, float RotZ);
+
+    [DllImport("__Internal")]
+    internal static extern string DisconnectPeerPanner(string peerId);
+
 }

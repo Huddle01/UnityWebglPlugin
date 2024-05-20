@@ -285,7 +285,6 @@ namespace Huddle01.Sample
             userSectionRef.UserInfo.Metadata.VideoStatus = enableVideo;
             userSectionRef.UpdateMetadata(userSectionRef.UserInfo.Metadata);
             Huddle01Init.Instance.EnableVideo(enableVideo, userSectionRef.UserInfo.Metadata);
-
         }
 
         public void OnMuteMicClicked()
@@ -306,7 +305,7 @@ namespace Huddle01.Sample
 
         public void SendMessageToRoom() 
         {
-            JSNative.SendTextMessage("Hello guyzz");
+            Huddle01Init.Instance.SendTextMessage("Hello guyzz");
         }
 
         #endregion

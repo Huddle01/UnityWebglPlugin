@@ -4,6 +4,10 @@
     room : null,
     huddleToken:null,
     localStream : null,
+    audioContext : null,
+    audioCtx : null,
+    audioListener : null,
+    soundObjects : null,
     
 
     // Video Receive
@@ -47,6 +51,93 @@
         var params = new URLSearchParams(document.location.search);
         huddleToken = params.get("token");
         console.log("Token",huddleToken);
+    },
+
+    SetUpForSpatialCommForPeer(peerId)
+    {
+        // get audio object
+
+        var audioElem = document.getElementById(peerId+"_audio");
+
+        if(!audioElem)
+        {
+            return;
+        }
+
+        const source = audioContext.createMediaElementSource(audioElem);
+
+        var panner = audioContext.createPanner();
+        panner.panningModel = 'HRTF';
+        panner.distanceModel = 'inverse';
+        panner.refDistance = 1;
+        panner.maxDistance = 10000;
+        panner.rolloffFactor = 1;
+        panner.coneInnerAngle = 360;
+        panner.coneOuterAngle = 0;
+        panner.coneOuterGain = 0;
+
+        source.connect(panner);
+        panner.connect(audioContext.destination);
+
+        soundObjects[peerId] = { source: source, panner: panner };
+    }
+
+    DisconnectPeerPanner(peerId)
+    {
+        if (soundObjects[peerId]) 
+        {
+            //get panner
+            var panner = soundObjects[peerId].panner;
+            //disconnect
+            panner.disconnect();
+            delete soundObjects[peerId];
+        }
+    }
+
+    SetUpForSpatialComm()
+    {
+        audioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+        audioListener = audioCtx.listener;
+        soundObjects = new Map();
+    },
+
+    UpdateListenerPosition(posX,posY,posZ)
+    {
+        audioListener.positionX.value = posX;
+        audioListener.positionY.value = posY;
+        audioListener.positionZ.value = posZ;
+    },
+
+    UpdateListenerRotation(rotX,rotY,rotZ)
+    {
+        audioListener.forwardX.value = rotX;
+        audioListener.forwardY.value = rotY;
+        audioListener.forwardZ.value = rotZ;
+
+        audioListener.upX.value = 0;
+        audioListener.upY.value = 1;
+        audioListener.upZ.value = 0;
+    },
+
+    UpdatePeerPosition(peerId,posX,posY,posZ)
+    {
+        if (soundObjects[peerId]) 
+        {
+            //get panner
+            var panner = soundObjects[peerId].panner;
+            panner.setPosition(posX, posY, posZ);
+        }
+    },
+
+    UpdatePeerRotation(peerId,rotX,rotY,rotZ)
+    {
+        if (soundObjects[peerId]) 
+        {
+            //get panner
+            var panner = soundObjects[peerId].panner;
+            panner.setOrientation(rotX, rotY, rotZ);
+        }
     },
 
 
