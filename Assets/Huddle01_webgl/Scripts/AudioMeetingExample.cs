@@ -85,6 +85,7 @@ namespace Huddle01.Sample
         private void OnRoomClosed()
         {
             DestroyAllChildren(_userSectionContentHolder);
+
         }
 
         private void OnPeerMuted(string peerId)

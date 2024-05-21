@@ -90,6 +90,26 @@ namespace Huddle01
             JSNative.UpdatePeerMeataData(metadata);
         }
 
+        public void SetUpdatedPositionForSpatialComm(string peerId, Vector3 pos)
+        {
+            JSNative.UpdatePeerPosition(peerId, pos.x, pos.y, pos.z);
+        }
+
+        public void SetUpdatedRotationForSpatialComm(string peerId, Quaternion rot)
+        {
+            JSNative.UpdatePeerRotation(peerId, rot.x, rot.y, rot.z);
+        }
+
+        public void SetLocalPlayerUpdatedPositionForSpatialComm(Vector3 pos)
+        {
+            JSNative.UpdateListenerPosition(pos.x, pos.y, pos.z);
+        }
+
+        public void SetLocalPlayerUpdatedRotationForSpatialComm(Quaternion rot)
+        {
+            JSNative.UpdateListenerRotation(rot.x, rot.y, rot.z);
+        }
+
 
         #region Callbacks
 
