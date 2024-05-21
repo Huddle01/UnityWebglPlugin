@@ -17,6 +17,8 @@ public class ClickMoveNavAgent : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
+            if (LocalPlayer == null) return;
+
             RaycastHit hit;
 
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, 100))

@@ -10,6 +10,8 @@ public class SpatialCommManager : MonoBehaviour
 {
     public Dictionary<string, GameObject> PeersMap = new Dictionary<string, GameObject>();
 
+    public ClickMoveNavAgent ClickMoveNavAgentRef;
+
     [HideInInspector]
     public GameObject LocalPlayer;
 
@@ -114,6 +116,7 @@ public class SpatialCommManager : MonoBehaviour
         HuddleUserInfo userInfo = new HuddleUserInfo();
         userInfo.PeerId = peerId;
         userSectionRef.Setup(userInfo);
+        Huddle01Init.Instance.SetupSpatialCommForRemotePeer(peerId);
         userSectionRef.UpdateMetadata(JsonConvert.DeserializeObject<PeerMetadata>(JSNative.GetRemotePeerMetaData(peerId)));
     }
 
@@ -131,6 +134,9 @@ public class SpatialCommManager : MonoBehaviour
         playerController.Setup(selfUserInfo);
 
         _menuPanel.SetActive(false);
+
+        ClickMoveNavAgentRef.LocalPlayer = playerController;
+        Huddle01Init.Instance.SetupSpatialCommForLocalPeer();
 
         Huddle01Init.Instance.GetLocalPeerId();
     }

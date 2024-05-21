@@ -110,6 +110,16 @@ namespace Huddle01
             JSNative.UpdateListenerRotation(rot.x, rot.y, rot.z);
         }
 
+        public void SetupSpatialCommForRemotePeer(string peerId) 
+        {
+            JSNative.SetUpForSpatialCommForPeer(peerId);
+        }
+
+        public void SetupSpatialCommForLocalPeer()
+        {
+            JSNative.SetUpForSpatialComm();
+        }
+
 
         #region Callbacks
 
