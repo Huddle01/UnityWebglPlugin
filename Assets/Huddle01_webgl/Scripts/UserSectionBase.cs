@@ -58,6 +58,11 @@ namespace Huddle01.Sample
             SetMuteIcon(true);
         }
 
+        public void MuteUser(bool isMuted) 
+        {
+            SetMuteIcon(isMuted);
+        }
+
         public void UpdateMetadata(PeerMetadata peerMetaData)
         {
             _userInfo.Metadata = peerMetaData;

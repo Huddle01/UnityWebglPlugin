@@ -88,7 +88,7 @@ namespace Huddle01.Sample
 
         }
 
-        private void OnPeerMuted(string peerId)
+        private void OnPeerMuted(string peerId,bool isMuted)
         {
             UserSectionBase userSectionRef = _selfUserSection.GetComponent<UserSectionBase>();
 
@@ -103,7 +103,7 @@ namespace Huddle01.Sample
             if (PeersMap.TryGetValue(peerId, out peerSection))
             {
                 Debug.Log($"OnPeerMetaDataUpdated : {peerSection.name}");
-                peerSection.GetComponent<UserSectionBase>().MuteUser();
+                peerSection.GetComponent<UserSectionBase>().MuteUser(isMuted);
             }
             else
             {
@@ -249,7 +249,6 @@ namespace Huddle01.Sample
                 Debug.LogError("Peer not found");
             }
         }
-
 
         #endregion
 

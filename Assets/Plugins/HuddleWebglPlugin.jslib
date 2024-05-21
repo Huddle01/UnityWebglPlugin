@@ -8,6 +8,7 @@
     audioCtx : null,
     audioListener : null,
     soundObjects : null,
+    SpatialCoomCapability : null,
     
 
     // Video Receive
@@ -56,7 +57,7 @@
     SetUpForSpatialCommForPeer(peerId)
     {
         // get audio object
-
+        
         var audioElem = document.getElementById(peerId+"_audio");
 
         if(!audioElem)
@@ -100,6 +101,7 @@
         audioCtx = new AudioContext();
         audioListener = audioCtx.listener;
         soundObjects = new Map();
+        SpatialCoomCapability = true;
     },
 
     UpdateListenerPosition(posX,posY,posZ)
@@ -208,6 +210,7 @@
                         console.log("Stream  : ",stream);
                         audioElem.srcObject = stream;
                         audioElem.play();
+                         SendMessage("Huddle01Init", "OnPeerUnMute",tempRemotePeer.peerId)
 
                     }else if(data.label == "video")
                     {   
@@ -303,6 +306,7 @@
                 console.log("Stream  : ",stream);
                 audioElem.srcObject = stream;
                 audioElem.play();
+                SendMessage("Huddle01Init", "OnPeerUnMute",remotePeer.peerId);
 
             }else if(data.label == "video")
             {

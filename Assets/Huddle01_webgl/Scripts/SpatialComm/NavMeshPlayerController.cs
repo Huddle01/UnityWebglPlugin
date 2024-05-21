@@ -18,7 +18,8 @@ public class NavMeshPlayerController : MonoBehaviour
     [SerializeField]
     private NavMeshAgent _agent;
 
-    public bool isLocalPlayer;
+    [HideInInspector]
+    public bool IsLocalPlayer = false;
 
     [Header("Video Comp")]
     [SerializeField]
@@ -26,13 +27,21 @@ public class NavMeshPlayerController : MonoBehaviour
     [SerializeField]
     private RawImage _videoTexture;
 
+    [Header("Audio Comp")]
+    [SerializeField]
+    private GameObject _mutedIcon;
+
+    [SerializeField]
+    private GameObject _unmutedIcon;
+
     public Texture2D Texture { get; private set; }
 
     public bool isVideoPlaying = false;
 
     private int m_TextureId = 1;
 
-    private bool _isSpatialComm = false;
+    [HideInInspector]
+    public bool IsSpatialComm = false;
 
 
     // Start is called before the first frame update
@@ -54,9 +63,9 @@ public class NavMeshPlayerController : MonoBehaviour
             SetupTexture();
         }
 
-        if (_isSpatialComm) 
+        if (IsSpatialComm) 
         {
-            if (isLocalPlayer)
+            if (IsLocalPlayer)
             {
                 SetLocalPlayerPositionForSpatialComm(transform.position);
                 SetLocalPlayerRotationForSpatialComm(transform.rotation);
@@ -72,7 +81,7 @@ public class NavMeshPlayerController : MonoBehaviour
     public void MoveToPosition(Vector3 goalPos) 
     {
         _agent.destination = goalPos;
-        if (isLocalPlayer) 
+        if (IsLocalPlayer) 
         {
             string posJson = JsonUtility.ToJson(goalPos);
             Huddle01Init.Instance.SendTextMessage(posJson);
@@ -135,20 +144,33 @@ public class NavMeshPlayerController : MonoBehaviour
 
     #endregion
 
-    #region
+    #region Audio
 
     public void MuteMic() 
     {
-    
+        SetMuteIcon(true);
+    }
+
+    public void ChangeMuteMicStatus(bool muted) 
+    {
+        SetMuteIcon(muted);
+    }
+
+    private void SetMuteIcon(bool muted)
+    {
+        _mutedIcon.SetActive(muted);
+        _unmutedIcon.SetActive(!muted);
     }
 
     #endregion
 
     #region Metadata
 
-    public void UpdateMetadata(PeerMetadata data) 
+    public void UpdateMetadata(PeerMetadata peerMetaData) 
     {
-    
+        _userInfo.Metadata = peerMetaData;
+        _nameText.text = _userInfo.Metadata.Name;
+        SetMuteIcon(_userInfo.Metadata.MuteStatus);
     }
 
     #endregion

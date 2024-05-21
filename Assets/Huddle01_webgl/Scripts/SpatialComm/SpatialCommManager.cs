@@ -20,6 +20,10 @@ public class SpatialCommManager : MonoBehaviour
     [SerializeField]
     private string _apiKey;
 
+    private string _roomId;
+    private string _token;
+    private string _name;
+
     [Header("Player prrfab")]
     [SerializeField]
     private GameObject _playerPrefab;
@@ -28,15 +32,20 @@ public class SpatialCommManager : MonoBehaviour
     [SerializeField]
     private GameObject _menuPanel;
     [SerializeField]
-    private TMP_InputField _roomId;
+    private GameObject _inGameOptionsPanel;
     [SerializeField]
-    private TMP_InputField _token;
+    private TMP_InputField _roomIdInputField;
+    [SerializeField]
+    private TMP_InputField _tokenInputField;
     [SerializeField]
     private TMP_InputField _nameInputFeild;
 
     [Header("Header")]
     [SerializeField]
     private TMP_Text _headerText;
+
+    private bool _selfMicMuteStatus = true;
+    private bool _selfVideoEnabled = false;
 
     // Start is called before the first frame update
     void Start()
@@ -58,7 +67,8 @@ public class SpatialCommManager : MonoBehaviour
         Huddle01Init.OnResumePeerVideo += OnPeerVideoResume;
         Huddle01Init.OnStopPeerVideo += OnPeerVideoStop;
         Huddle01Init.OnMessageReceived += OnMessageReceived;
-    }
+        Huddle01Init.PeerMuted += OnPeerMuteStatusChanged;
+    }    
 
     private void OnDisable()
     {
@@ -71,6 +81,7 @@ public class SpatialCommManager : MonoBehaviour
         Huddle01Init.OnResumePeerVideo -= OnPeerVideoResume;
         Huddle01Init.OnStopPeerVideo -= OnPeerVideoStop;
         Huddle01Init.OnMessageReceived -= OnMessageReceived;
+        Huddle01Init.PeerMuted -= OnPeerMuteStatusChanged;
     }
 
     // Update is called once per frame
@@ -116,7 +127,6 @@ public class SpatialCommManager : MonoBehaviour
         HuddleUserInfo userInfo = new HuddleUserInfo();
         userInfo.PeerId = peerId;
         userSectionRef.Setup(userInfo);
-        Huddle01Init.Instance.SetupSpatialCommForRemotePeer(peerId);
         userSectionRef.UpdateMetadata(JsonConvert.DeserializeObject<PeerMetadata>(JSNative.GetRemotePeerMetaData(peerId)));
     }
 
@@ -127,17 +137,18 @@ public class SpatialCommManager : MonoBehaviour
         LocalPlayer = Instantiate(_playerPrefab);
         LocalPlayer.transform.position = Vector3.zero;
         NavMeshPlayerController playerController = LocalPlayer.GetComponent<NavMeshPlayerController>();
-        playerController.isLocalPlayer = true;
+        playerController.IsLocalPlayer = true;
         HuddleUserInfo selfUserInfo = new HuddleUserInfo();
         selfUserInfo.IsRemotePeer = false;
         selfUserInfo.Role = "guest";
         playerController.Setup(selfUserInfo);
-
+        
         _menuPanel.SetActive(false);
+        _inGameOptionsPanel.SetActive(true);
 
         ClickMoveNavAgentRef.LocalPlayer = playerController;
         Huddle01Init.Instance.SetupSpatialCommForLocalPeer();
-
+        playerController.IsSpatialComm = true;
         Huddle01Init.Instance.GetLocalPeerId();
     }
 
@@ -156,6 +167,39 @@ public class SpatialCommManager : MonoBehaviour
         UpdateLocalPeerMetaData(localPlayerTemp.UserInfo.Metadata);
         localPlayerTemp.UpdateMetadata(localPlayerTemp.UserInfo.Metadata);
         localPlayerTemp.MuteMic();
+    }
+
+    private void OnPeerMuteStatusChanged(string peerId, bool isMuted)
+    {
+        GameObject peerSection = null;
+        Debug.Log($"OnPeerMuteStatusChanged : {peerId}");
+
+        if (PeersMap.TryGetValue(peerId, out peerSection))
+        {
+            Debug.Log($"OnPeerMetaDataUpdated : {peerSection.name}");
+            NavMeshPlayerController remotePlayer = peerSection.GetComponent<NavMeshPlayerController>();
+            remotePlayer.ChangeMuteMicStatus(isMuted);
+
+            if (isMuted)
+            {
+                remotePlayer.IsSpatialComm = false;
+                //disable spatial comm
+                Huddle01Init.Instance.DisableSpatialAudioForPeer(peerId);
+            }
+            else 
+            {
+
+                //setup spatial comm
+                remotePlayer.IsSpatialComm = true;
+                Huddle01Init.Instance.SetupSpatialCommForRemotePeer(peerId);
+            }
+        }
+        else
+        {
+            Debug.LogError("Peer not found");
+        }
+
+
     }
 
     private void OnPeerMetaDataUpdated(PeerMetadata peerInfo)
@@ -238,10 +282,56 @@ public class SpatialCommManager : MonoBehaviour
 
     #region Public function
 
+    public void JoinRoom()
+    {
+        Debug.Log("Join Room Clicked");
+        _roomId = _roomIdInputField.text;
+        _token = _tokenInputField.text;
+        _name = _nameInputFeild.text;
+        Huddle01Init.Instance.JoinRoom(_roomId, _token);
+    }
+
     public void UpdateLocalPeerMetaData(PeerMetadata peerMetadata)
     {
         Debug.Log($"UpdateLocalPeerMetaData : {JsonConvert.SerializeObject(peerMetadata)}");
         Huddle01Init.Instance.UpdateLocalPeerMetaData(JsonConvert.SerializeObject(peerMetadata));
+    }
+
+    public void MuteMic(bool shouldMute)
+    {
+        _selfMicMuteStatus = shouldMute;
+        NavMeshPlayerController userSectionRef = LocalPlayer.GetComponent<NavMeshPlayerController>();
+        Debug.Log($"Mute mic metadata : {JsonConvert.SerializeObject(userSectionRef.UserInfo.Metadata)}");
+        userSectionRef.UserInfo.Metadata.MuteStatus = shouldMute;
+        userSectionRef.UpdateMetadata(userSectionRef.UserInfo.Metadata);
+        Huddle01Init.Instance.MuteMic(shouldMute, userSectionRef.UserInfo.Metadata);
+    }
+
+
+    public void EnableVideoStreaming(bool enableVideo)
+    {
+        _selfVideoEnabled = enableVideo;
+        NavMeshPlayerController userSectionRef = LocalPlayer.GetComponent<NavMeshPlayerController>();
+        Debug.Log($"Mute mic metadata : {JsonConvert.SerializeObject(userSectionRef.UserInfo.Metadata)}");
+        userSectionRef.UserInfo.Metadata.VideoStatus = enableVideo;
+        userSectionRef.UpdateMetadata(userSectionRef.UserInfo.Metadata);
+        Huddle01Init.Instance.EnableVideo(enableVideo, userSectionRef.UserInfo.Metadata);
+    }
+
+    public void OnMuteMicClicked()
+    {
+        MuteMic(!_selfMicMuteStatus);
+    }
+
+    public void EnableVideo()
+    {
+        EnableVideoStreaming(!_selfVideoEnabled);
+    }
+
+    public void LeaveRoom()
+    {
+        Huddle01Init.Instance.LeaveRoom();
+        OnRoomClosed();
     }
 
     #endregion
