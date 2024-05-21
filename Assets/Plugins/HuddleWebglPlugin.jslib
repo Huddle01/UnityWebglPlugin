@@ -54,15 +54,13 @@
         console.log("Token",huddleToken);
     },
 
-    SetUpForSpatialCommForPeer(peerId)
+    SetUpForSpatialCommForPeer : function(peerId)
     {
-        // get audio object
-        
         var audioElem = document.getElementById(peerId+"_audio");
 
         if(!audioElem)
         {
-            return;
+            return console.log("track not found");
         }
 
         const source = audioContext.createMediaElementSource(audioElem);
@@ -81,9 +79,9 @@
         panner.connect(audioContext.destination);
 
         soundObjects[peerId] = { source: source, panner: panner };
-    }
+    },
 
-    DisconnectPeerPanner(peerId)
+    DisconnectPeerPanner: function(peerId)
     {
         if (soundObjects[peerId]) 
         {
@@ -93,9 +91,9 @@
             panner.disconnect();
             delete soundObjects[peerId];
         }
-    }
+    },
 
-    SetUpForSpatialComm()
+    SetUpForSpatialComm:function()
     {
         audioContext = window.AudioContext || window.webkitAudioContext;
         audioCtx = new AudioContext();
@@ -104,14 +102,14 @@
         SpatialCoomCapability = true;
     },
 
-    UpdateListenerPosition(posX,posY,posZ)
+    UpdateListenerPosition:function(posX,posY,posZ)
     {
         audioListener.positionX.value = posX;
         audioListener.positionY.value = posY;
         audioListener.positionZ.value = posZ;
     },
 
-    UpdateListenerRotation(rotX,rotY,rotZ)
+    UpdateListenerRotation:function(rotX,rotY,rotZ)
     {
         audioListener.forwardX.value = rotX;
         audioListener.forwardY.value = rotY;
@@ -122,7 +120,7 @@
         audioListener.upZ.value = 0;
     },
 
-    UpdatePeerPosition(peerId,posX,posY,posZ)
+    UpdatePeerPosition:function(peerId,posX,posY,posZ)
     {
         if (soundObjects[peerId]) 
         {
@@ -132,7 +130,7 @@
         }
     },
 
-    UpdatePeerRotation(peerId,rotX,rotY,rotZ)
+    UpdatePeerRotation:function(peerId,rotX,rotY,rotZ)
     {
         if (soundObjects[peerId]) 
         {
@@ -210,7 +208,7 @@
                         console.log("Stream  : ",stream);
                         audioElem.srcObject = stream;
                         audioElem.play();
-                         SendMessage("Huddle01Init", "OnPeerUnMute",tempRemotePeer.peerId)
+                        SendMessage("Huddle01Init", "OnPeerUnMute",tempRemotePeer.peerId);
 
                     }else if(data.label == "video")
                     {   
@@ -244,7 +242,7 @@
                             audioElem.remove();
                         }
 
-                        SendMessage("Huddle01Init", "OnPeerMute",tempRemotePeer.peerId)
+                        SendMessage("Huddle01Init", "OnPeerMute",tempRemotePeer.peerId);
 
                     }else if(data.label == "video")
                     {
@@ -255,7 +253,7 @@
                             videoElem.remove();
                         }
 
-                        SendMessage("Huddle01Init", "StopVideo",tempRemotePeer.peerId)
+                        SendMessage("Huddle01Init", "StopVideo",tempRemotePeer.peerId);
 
                     }
                 });
@@ -333,7 +331,7 @@
                         audioElem.remove();
                     }
 
-                    SendMessage("Huddle01Init", "OnPeerMute",remotePeer.peerId)
+                    SendMessage("Huddle01Init", "OnPeerMute",remotePeer.peerId);
 
             }else if(data.label == "video")
             {
@@ -344,7 +342,7 @@
                     videoElem.remove();
                 }
 
-                SendMessage("Huddle01Init", "StopVideo",remotePeer.peerId)
+                SendMessage("Huddle01Init", "StopVideo",remotePeer.peerId);
 
             }
         });
