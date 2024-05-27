@@ -274,7 +274,29 @@ public class SpatialCommManager : MonoBehaviour
     private void OnMessageReceived(string data)
     {
         Debug.Log($"received data : {data}");
-        //extract peerID and position
+
+        MessageReceivedResponse response = JsonConvert.DeserializeObject<MessageReceivedResponse>(data);
+
+        string fromPeerId = response.From;
+        if (LocalPlayer.GetComponent<NavMeshPlayerController>().UserInfo.PeerId == fromPeerId) return;
+
+        Vector3 goalPos = JsonConvert.DeserializeObject<Vector3>(response.Payload);
+
+        //check for other peer
+        GameObject peerSection = null;
+        Debug.Log($"OnMessageReceived : {fromPeerId}");
+
+        if (PeersMap.TryGetValue(fromPeerId, out peerSection))
+        {
+            Debug.Log($"OnPeerMetaDataUpdated : {peerSection.name}");
+            peerSection.GetComponent<NavMeshPlayerController>().MoveToPosition(goalPos);
+        }
+        else
+        {
+            Debug.LogError("Peer not found");
+        }
+
+
         //Move to position
     }
 

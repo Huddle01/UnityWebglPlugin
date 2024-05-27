@@ -28,7 +28,7 @@
     //Start Camera
     StartCamera: function(id)
     {
-        createVideoElement(UTF8ToString(id));
+        
     },
 
     InitHuddle01WebSdk:function(projectId)
@@ -49,9 +49,9 @@
         });
 
         //for testing only getting value of token from url
-        var params = new URLSearchParams(document.location.search);
-        huddleToken = params.get("token");
-        console.log("Token",huddleToken);
+        //var params = new URLSearchParams(document.location.search);
+        //huddleToken = params.get("token");
+        //console.log("Token",huddleToken);
     },
 
     SetUpForSpatialCommForPeer : function(peerId)
@@ -147,7 +147,7 @@
         //join room
         room = await huddleClient.joinRoom({
                 roomId: UTF8ToString(roomId),
-                token: huddleToken,
+                token: UTF8ToString(tokenVal),
                 });
 
 
