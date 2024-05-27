@@ -69,11 +69,11 @@
         panner.panningModel = 'HRTF';
         panner.distanceModel = 'inverse';
         panner.refDistance = 1;
-        panner.maxDistance = 5;
+        panner.maxDistance = 10;
         panner.rolloffFactor = 1;
-        panner.coneInnerAngle = 360;
-        panner.coneOuterAngle = 0;
-        panner.coneOuterGain = 0;
+        panner.coneInnerAngle = 60;
+        panner.coneOuterAngle = 90;
+        panner.coneOuterGain = 0.3;
 
         source.connect(panner);
         panner.connect(audioContext.destination);
