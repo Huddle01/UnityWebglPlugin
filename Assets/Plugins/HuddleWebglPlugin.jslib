@@ -69,7 +69,7 @@
         panner.panningModel = 'HRTF';
         panner.distanceModel = 'inverse';
         panner.refDistance = 1;
-        panner.maxDistance = 10000;
+        panner.maxDistance = 5;
         panner.rolloffFactor = 1;
         panner.coneInnerAngle = 360;
         panner.coneOuterAngle = 0;
@@ -111,6 +111,7 @@
 
     UpdateListenerRotation:function(rotX,rotY,rotZ)
     {
+        
         audioListener.forwardX.value = rotX;
         audioListener.forwardY.value = rotY;
         audioListener.forwardZ.value = rotZ;
@@ -124,6 +125,7 @@
     {
         if (soundObjects[peerId]) 
         {
+            console.log("Update peers position");
             //get panner
             var panner = soundObjects[peerId].panner;
             panner.setPosition(posX, posY, posZ);

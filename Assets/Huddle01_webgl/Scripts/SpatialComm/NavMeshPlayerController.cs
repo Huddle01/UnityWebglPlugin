@@ -43,6 +43,9 @@ public class NavMeshPlayerController : MonoBehaviour
     [HideInInspector]
     public bool IsSpatialComm = false;
 
+    [SerializeField]
+    private Texture2D _defaultVideoTexture;
+
 
     // Start is called before the first frame update
     void Start()
@@ -112,7 +115,8 @@ public class NavMeshPlayerController : MonoBehaviour
     public void StopVideo()
     {
         isVideoPlaying = false;
-        _videoTexture.gameObject.SetActive(false);
+        //_videoTexture.gameObject.SetActive(false);
+        _videoTexture.texture = _defaultVideoTexture;
     }
 
     public void ResumeVideo()
