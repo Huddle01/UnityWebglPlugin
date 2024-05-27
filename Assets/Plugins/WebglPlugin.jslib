@@ -38,6 +38,11 @@
                         },
                     });
 
+        huddleClient.localPeer.on('receive-data', function (data) {
+            console.log(data);
+            SendMessage("Huddle01Init", "MessageReceived",JSON.stringify(data));
+        });
+
         //for testing only getting value of token from url
         var params = new URLSearchParams(document.location.search);
         huddleToken = params.get("token");
@@ -274,6 +279,7 @@
             // delete associated 
             SendMessage("Huddle01Init", "OnPeerLeft",peerId);     
         });
+
     },
 
 
@@ -348,7 +354,9 @@
 
     SendTextMessage : function(message)
     {
-        huddleClient.localPeer.sendData({ to: "*", payload: message, label: 'chat' });
+        var mes = UTF8ToString(message);
+        console.log("Sending message",mes);
+        huddleClient.localPeer.sendData({ to: "*", payload: mes, label: 'chat' });
     },
 
     ConsumePeer : function(peerId)
