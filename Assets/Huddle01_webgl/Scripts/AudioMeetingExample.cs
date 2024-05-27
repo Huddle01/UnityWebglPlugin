@@ -85,9 +85,10 @@ namespace Huddle01.Sample
         private void OnRoomClosed()
         {
             DestroyAllChildren(_userSectionContentHolder);
+
         }
 
-        private void OnPeerMuted(string peerId)
+        private void OnPeerMuted(string peerId,bool isMuted)
         {
             UserSectionBase userSectionRef = _selfUserSection.GetComponent<UserSectionBase>();
 
@@ -102,7 +103,7 @@ namespace Huddle01.Sample
             if (PeersMap.TryGetValue(peerId, out peerSection))
             {
                 Debug.Log($"OnPeerMetaDataUpdated : {peerSection.name}");
-                peerSection.GetComponent<UserSectionBase>().MuteUser();
+                peerSection.GetComponent<UserSectionBase>().MuteUser(isMuted);
             }
             else
             {
@@ -249,7 +250,6 @@ namespace Huddle01.Sample
             }
         }
 
-
         #endregion
 
         #region Main Functions
@@ -285,7 +285,6 @@ namespace Huddle01.Sample
             userSectionRef.UserInfo.Metadata.VideoStatus = enableVideo;
             userSectionRef.UpdateMetadata(userSectionRef.UserInfo.Metadata);
             Huddle01Init.Instance.EnableVideo(enableVideo, userSectionRef.UserInfo.Metadata);
-
         }
 
         public void OnMuteMicClicked()
@@ -306,7 +305,7 @@ namespace Huddle01.Sample
 
         public void SendMessageToRoom() 
         {
-            JSNative.SendTextMessage("Hello guyzz");
+            Huddle01Init.Instance.SendTextMessage("Hello guyzz");
         }
 
         #endregion

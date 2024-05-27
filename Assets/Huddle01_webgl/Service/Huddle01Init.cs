@@ -14,7 +14,7 @@ namespace Huddle01
         public delegate void LocalPeerIdEventHandler(string peerId);
         public delegate void PeerAddedEventHandler(string peerInfo);
         public delegate void PeerLeftEventHandler(string peerInfo);
-        public delegate void PeerMutedEventHandler(string peerInfo);
+        public delegate void PeerMutedEventHandler(string peerInfo, bool isMuted);
         public delegate void RoomClosedEventHandler();
         public delegate void PeerMetadataUpdatedEventHandler(PeerMetadata peerMetadata);
         public delegate void JoinRoomEventHandler();
@@ -90,6 +90,41 @@ namespace Huddle01
             JSNative.UpdatePeerMeataData(metadata);
         }
 
+        public void SetUpdatedPositionForSpatialComm(string peerId, Vector3 pos)
+        {
+            JSNative.UpdatePeerPosition(peerId, pos.x, pos.y, pos.z);
+        }
+
+        public void SetUpdatedRotationForSpatialComm(string peerId, Quaternion rot)
+        {
+            JSNative.UpdatePeerRotation(peerId, rot.x, rot.y, rot.z);
+        }
+
+        public void SetLocalPlayerUpdatedPositionForSpatialComm(Vector3 pos)
+        {
+            JSNative.UpdateListenerPosition(pos.x, pos.y, pos.z);
+        }
+
+        public void SetLocalPlayerUpdatedRotationForSpatialComm(Quaternion rot)
+        {
+            JSNative.UpdateListenerRotation(rot.x, rot.y, rot.z);
+        }
+
+        public void SetupSpatialCommForRemotePeer(string peerId) 
+        {
+            JSNative.SetUpForSpatialCommForPeer(peerId);
+        }
+
+        public void SetupSpatialCommForLocalPeer()
+        {
+            JSNative.SetUpForSpatialComm();
+        }
+
+        public void DisableSpatialAudioForPeer(string peerId) 
+        {
+            JSNative.DisconnectPeerPanner(peerId);
+        }
+
 
         #region Callbacks
 
@@ -120,7 +155,13 @@ namespace Huddle01
         public void OnPeerMute(string peerId)
         {
             Debug.Log($"OnPeerMute {peerId}");
-            PeerMuted?.Invoke(peerId);
+            PeerMuted?.Invoke(peerId,true);
+        }
+
+        public void OnPeerUnMute(string peerId)
+        {
+            Debug.Log($"OnPeerMute {peerId}");
+            PeerMuted?.Invoke(peerId,false);
         }
 
         public void OnRoomClosed()

@@ -41,4 +41,17 @@ public class JoinRoomResponse
 
 }
 
+[System.Serializable]
+public class MessageReceivedResponse 
+{
+    [JsonProperty("from")]
+    public string From;
+
+    [JsonProperty("label")]
+    public string Label;
+
+    [JsonProperty("payload")]
+    public string Payload;
+}
+
 
