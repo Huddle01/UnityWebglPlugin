@@ -92,7 +92,7 @@ namespace Huddle01
 
         public void SetUpdatedPositionForSpatialComm(string peerId, Vector3 pos)
         {
-            JSNative.UpdatePeerPosition(peerId, pos.x, pos.y, pos.z);
+            JSNative.UpdatePeerPosition(peerId, ConvertToOneDecimal(pos.x), ConvertToOneDecimal(pos.y), ConvertToOneDecimal(pos.z));
         }
 
         public void SetUpdatedRotationForSpatialComm(string peerId, Quaternion rot)
@@ -102,7 +102,7 @@ namespace Huddle01
 
         public void SetLocalPlayerUpdatedPositionForSpatialComm(Vector3 pos)
         {
-            JSNative.UpdateListenerPosition(pos.x, pos.y, pos.z);
+            JSNative.UpdateListenerPosition(ConvertToOneDecimal(pos.x), ConvertToOneDecimal(pos.y), ConvertToOneDecimal(pos.z));
         }
 
         public void SetLocalPlayerUpdatedRotationForSpatialComm(Quaternion rot)
@@ -194,6 +194,11 @@ namespace Huddle01
         }
 
         #endregion
+
+        private float ConvertToOneDecimal(float val) 
+        {
+            return Mathf.Round(val * 10f) / 10f;
+        }
     }
 }
 

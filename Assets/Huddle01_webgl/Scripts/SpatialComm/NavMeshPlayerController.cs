@@ -70,13 +70,13 @@ public class NavMeshPlayerController : MonoBehaviour
         {
             if (IsLocalPlayer)
             {
-                SetLocalPlayerPositionForSpatialComm(transform.position);
-                SetLocalPlayerRotationForSpatialComm(transform.rotation);
+                SetLocalPlayerPositionForSpatialComm(Vector3.zero);
+                //SetLocalPlayerRotationForSpatialComm(transform.rotation);
             }
             else 
             {
                 SetPositonForSpatialComm(_userInfo.PeerId, transform.position);
-                SetRotationForSpatialComm(_userInfo.PeerId, transform.rotation);
+                //SetRotationForSpatialComm(_userInfo.PeerId, transform.rotation);
             }
         }
     }
@@ -179,5 +179,9 @@ public class NavMeshPlayerController : MonoBehaviour
 
     #endregion
 
+    private float ConvertToOneDecimal(float val)
+    {
+        return Mathf.Round(val * 10f) / 10f;
+    }
 
 }
