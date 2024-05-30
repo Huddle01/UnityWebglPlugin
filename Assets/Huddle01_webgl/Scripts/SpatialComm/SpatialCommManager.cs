@@ -5,6 +5,7 @@ using Huddle01;
 using TMPro;
 using Newtonsoft.Json;
 using System;
+using System.Threading.Tasks;
 
 public class SpatialCommManager : MonoBehaviour
 {
@@ -127,7 +128,15 @@ public class SpatialCommManager : MonoBehaviour
         HuddleUserInfo userInfo = new HuddleUserInfo();
         userInfo.PeerId = peerId;
         userSectionRef.Setup(userInfo);
-        userSectionRef.UpdateMetadata(JsonConvert.DeserializeObject<PeerMetadata>(JSNative.GetRemotePeerMetaData(peerId)));
+        try
+        {
+            Debug.Log($"Get metadata {JSNative.GetRemotePeerMetaData(peerId)}");
+            userSectionRef.UpdateMetadata(JsonConvert.DeserializeObject<PeerMetadata>(JSNative.GetRemotePeerMetaData(peerId)));
+        }
+        catch 
+        {
+            Debug.Log("Metadata is empty");
+        }
     }
 
     private void OnJoinRoom()
@@ -171,6 +180,11 @@ public class SpatialCommManager : MonoBehaviour
 
     private void OnPeerMuteStatusChanged(string peerId, bool isMuted)
     {
+        StartCoroutine(PostOnPeerMuteStatsChanged(peerId, isMuted));
+    }
+
+    IEnumerator PostOnPeerMuteStatsChanged(string peerId, bool isMuted) 
+    {
         GameObject peerSection = null;
         Debug.Log($"OnPeerMuteStatusChanged : {peerId}");
 
@@ -180,17 +194,19 @@ public class SpatialCommManager : MonoBehaviour
             NavMeshPlayerController remotePlayer = peerSection.GetComponent<NavMeshPlayerController>();
             remotePlayer.ChangeMuteMicStatus(isMuted);
 
+            yield return new WaitForSeconds(1);
+
             if (isMuted)
             {
                 remotePlayer.IsSpatialComm = false;
                 //disable spatial comm
                 Huddle01Init.Instance.DisableSpatialAudioForPeer(peerId);
             }
-            else 
+            else
             {
-
                 //setup spatial comm
                 remotePlayer.IsSpatialComm = true;
+                Debug.Log($"Setting up spatial comm for peer {peerId}");
                 Huddle01Init.Instance.SetupSpatialCommForRemotePeer(peerId);
             }
         }
@@ -198,8 +214,6 @@ public class SpatialCommManager : MonoBehaviour
         {
             Debug.LogError("Peer not found");
         }
-
-
     }
 
     private void OnPeerMetaDataUpdated(PeerMetadata peerInfo)
