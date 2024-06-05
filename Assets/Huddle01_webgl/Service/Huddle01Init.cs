@@ -21,6 +21,7 @@ namespace Huddle01
         public delegate void ResumePeerVideoEventHandler(string peerId);
         public delegate void StopPeerVideoEventHandler(string peerId);
         public delegate void MessageReceivedEventHandler(string data);
+        public delegate void LeaveRoomEventHandler();
 
         public static event LocalPeerIdEventHandler LocalPeerId;
         public static event PeerAddedEventHandler PeerAdded;
@@ -32,6 +33,7 @@ namespace Huddle01
         public static event ResumePeerVideoEventHandler OnResumePeerVideo;
         public static event StopPeerVideoEventHandler OnStopPeerVideo;
         public static event MessageReceivedEventHandler OnMessageReceived;
+        public static event LeaveRoomEventHandler OnLeaveRoom;
 
         private string _projectId;
         private string _roomId;
@@ -39,6 +41,8 @@ namespace Huddle01
 
         public string RoomId => _roomId;
         public string Token => _token;
+
+        private List<string> _allPeers = new List<string>();
 
         public void Init(string projectId)
         {
@@ -95,7 +99,7 @@ namespace Huddle01
             JSNative.UpdatePeerPosition(peerId, ConvertToOneDecimal(pos.x), ConvertToOneDecimal(pos.y), ConvertToOneDecimal(pos.z));
         }
 
-        public void SetUpdatedRotationForSpatialComm(string peerId, Quaternion rot)
+        public void SetUpdatedRotationForSpatialComm(string peerId, Vector3 rot)
         {
             JSNative.UpdatePeerRotation(peerId, rot.x, rot.y, rot.z);
         }
@@ -105,7 +109,7 @@ namespace Huddle01
             JSNative.UpdateListenerPosition(ConvertToOneDecimal(pos.x), ConvertToOneDecimal(pos.y), ConvertToOneDecimal(pos.z));
         }
 
-        public void SetLocalPlayerUpdatedRotationForSpatialComm(Quaternion rot)
+        public void SetLocalPlayerUpdatedRotationForSpatialComm(Vector3 rot)
         {
             JSNative.UpdateListenerRotation(rot.x, rot.y, rot.z);
         }
@@ -143,12 +147,14 @@ namespace Huddle01
         public void OnPeerAdded(string peerInfo)
         {
             Debug.Log($"OnPeerAdded {peerInfo}");
+            if (!_allPeers.Contains(peerInfo)) _allPeers.Add(peerInfo);
             PeerAdded?.Invoke(peerInfo);
         }
 
         public void OnPeerLeft(string peerInfo)
         {
             Debug.Log($"OnPeerLeft {peerInfo}");
+            if (!_allPeers.Contains(peerInfo)) _allPeers.Remove(peerInfo);
             PeerLeft?.Invoke(peerInfo);
         }
 
@@ -191,6 +197,12 @@ namespace Huddle01
         {
             Debug.Log($"Message received : {data}");
             OnMessageReceived?.Invoke(data);
+        }
+
+        public void OnLeavingRoom() 
+        {
+            Debug.Log($"Message received");
+            OnLeaveRoom.Invoke();
         }
 
         #endregion

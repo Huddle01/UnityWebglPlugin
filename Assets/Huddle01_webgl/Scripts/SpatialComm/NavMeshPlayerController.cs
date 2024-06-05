@@ -70,13 +70,13 @@ public class NavMeshPlayerController : MonoBehaviour
         {
             if (IsLocalPlayer)
             {
-                SetLocalPlayerPositionForSpatialComm(Vector3.zero);
-                //SetLocalPlayerRotationForSpatialComm(transform.rotation);
+                SetLocalPlayerPositionForSpatialComm(transform.position);
+                SetLocalPlayerRotationForSpatialComm(transform.forward);
             }
             else 
             {
                 SetPositonForSpatialComm(_userInfo.PeerId, transform.position);
-                //SetRotationForSpatialComm(_userInfo.PeerId, transform.rotation);
+                SetRotationForSpatialComm(_userInfo.PeerId, transform.forward);
             }
         }
     }
@@ -131,7 +131,7 @@ public class NavMeshPlayerController : MonoBehaviour
         Huddle01Init.Instance.SetUpdatedPositionForSpatialComm(peerId, pos);
     }
 
-    private void SetRotationForSpatialComm(string peerId, Quaternion rot) 
+    private void SetRotationForSpatialComm(string peerId, Vector3 rot) 
     {
         Huddle01Init.Instance.SetUpdatedRotationForSpatialComm(peerId, rot);
     }
@@ -141,7 +141,7 @@ public class NavMeshPlayerController : MonoBehaviour
         Huddle01Init.Instance.SetLocalPlayerUpdatedPositionForSpatialComm(pos);
     }
 
-    private void SetLocalPlayerRotationForSpatialComm(Quaternion rot)
+    private void SetLocalPlayerRotationForSpatialComm(Vector3 rot)
     {
         Huddle01Init.Instance.SetLocalPlayerUpdatedRotationForSpatialComm(rot);
     }

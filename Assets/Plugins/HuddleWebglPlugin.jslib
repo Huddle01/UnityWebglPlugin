@@ -7,7 +7,6 @@
     audioContext : null,
     audioListener : null,
     soundObjects : null,
-    SpatialCoomCapability : null,
     peersMap : null,
     
 
@@ -50,10 +49,13 @@
 
         peersMap = new Map();
 
-        //for testing only getting value of token from url
-        //var params = new URLSearchParams(document.location.search);
-        //huddleToken = params.get("token");
-        //console.log("Token",huddleToken);
+        window.addEventListener("beforeunload", function (event) {
+           
+            if (typeof unityInstance !== 'undefined' && unityInstance) {
+                huddleClient.leaveRoom();
+                SendMessage("Huddle01Init", "OnLeavingRoom");
+            }
+        });
     },
 
     SetUpForSpatialCommForPeer : function(peerId)
@@ -71,12 +73,10 @@
             return console.error("audio stream not found");
         }
 
-        audioElem.pause();
-
-        const track = audioContext.createMediaStreamSource(peersMap[peerIdString].audioStream);
+        var source = audioContext.createMediaStreamSource(peersMap[peerIdString].audioStream);
         //const track = CreateMediaElementSource(audioContext,audioElem);
         var panner = audioContext.createPanner();
-        panner.positionX.setValueAtTime(1000, 0);
+        
         panner.panningModel = 'HRTF';
         panner.distanceModel = 'exponential';
         panner.refDistance = 1;
@@ -86,12 +86,13 @@
         panner.coneOuterAngle = 360;
         panner.coneOuterGain = 0;
 
-        track.connect(panner).connect(audioContext.destination);
+        source.connect(panner);
+        panner.connect(audioContext.destination);
 
         audioElem.srcObject = peersMap[peerIdString].audioStream;
         audioElem.play();
 
-        soundObjects[peerIdString] = { source: track, panner: panner };
+        soundObjects[peerIdString] = { source: source, panner: panner };
 
         console.log("Spatial comm setup for peer",peerIdString);
     },
@@ -112,16 +113,22 @@
     {
         console.log("Init Spatial Comm");
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
         audioListener = audioContext.listener;
-        audioListener.setPosition(0, 0, 0);
+        audioListener.positionX.value = 0;
+        audioListener.positionY.value = 0;
+        audioListener.positionZ.value = 0;
+        
         soundObjects = new Map();
-        SpatialCoomCapability = true;
         console.log("spatial comm is setup for local peer");
     },
 
     UpdateListenerPosition:function(posX,posY,posZ)
     {
-        audioListener.setPosition(posX,posY,posZ);
+        audioListener.positionX.value = posX;
+        audioListener.positionY.value = posY;
+        audioListener.positionZ.value = posZ;
+        console.log("Updating local Peer Position");
     },
 
     UpdateListenerRotation:function(rotX,rotY,rotZ)
@@ -129,10 +136,6 @@
         audioListener.forwardX.value = rotX;
         audioListener.forwardY.value = rotY;
         audioListener.forwardZ.value = rotZ;
-
-        audioListener.upX.value = 0;
-        audioListener.upY.value = 1;
-        audioListener.upZ.value = 0;
     },
 
     UpdatePeerPosition:function(peerId,posX,posY,posZ)
@@ -142,6 +145,7 @@
             //get panner
             var tempPanner = soundObjects[UTF8ToString(peerId)].panner;
             tempPanner.setPosition(posX, posY, posZ);
+            console.log("Updating Peer Position");
         }
     },
 
@@ -151,7 +155,10 @@
         {
             //get panner
             var tempPanner = soundObjects[UTF8ToString(peerId)].panner;
-            tempPanner.setOrientation(rotX, rotY, rotZ);
+            tempPanner.orientationX.value = rotX;
+            tempPanner.orientationY.value = rotY;
+            tempPanner.orientationZ.value = rotZ;
+            console.log("Updating Peer Rotation");
         }
     },
 
@@ -180,9 +187,6 @@
                 var tempRemotePeer = value;
 
                 peersMap[tempRemotePeer.peerId] = { audioStream: null, videoStream:null };
-
-                console.log("remote peer : ",tempRemotePeer);
-
                 SendMessage("Huddle01Init", "OnPeerAdded",tempRemotePeer.peerId);
                 
                 // remote peer on metadata updated event
@@ -194,26 +198,13 @@
                 
                 tempRemotePeer.on("stream-available", async function(data) {
                     console.log("stream-available : ",data);
-                    const audioElem = document.createElement("audio");
-                    audioElem.id = tempRemotePeer.peerId + "_audio";
-
-                    if(!data.consumer.track)
-                    {
-                        return console.log("track not found");    
-                    }
-                    const stream  = new MediaStream([data.consumer.track]);
-
-                    audioElem.srcObject = stream;
-                    audioElem.play();
-
                 });
 
                 // remote peer on stream available event
                 tempRemotePeer.on("stream-playable", async function(data) {
-                    console.log("stream-playable : ",data);
                     if(data.label == "audio")
                     {
-                        const audioElem = document.createElement("audio");
+                        var audioElem = document.createElement("audio");
                         audioElem.id = tempRemotePeer.peerId + "_audio";
 
                         if(!data.consumer.track)
@@ -221,12 +212,12 @@
                             return console.log("track not found");    
                         }
                         
-                        const stream  = new MediaStream([data.consumer.track]);
-                        console.log("Stream  : ",stream);
-                        //audioElem.srcObject = stream;
+                        var stream  = new MediaStream([data.consumer.track]);
                         document.body.appendChild(audioElem);
-                        //audioElem.play();
                         
+                        audioElem.srcObject = stream;
+                        audioElem.play();
+
                         if(peersMap[tempRemotePeer.peerId])
                         {
                             peersMap[tempRemotePeer.peerId].audioStream = stream;
@@ -243,9 +234,11 @@
 
                         var videoElem = document.createElement("video");
                         videoElem.id = tempRemotePeer.peerId + "_video";
-                        console.log("video created : ",videoElem.id);
-                        document.body.appendChild(videoElem);
 
+                        document.body.appendChild(videoElem);
+                        
+                        videoElem.style.display = "none";
+                        videoElem.style.opacity = 0;
                         const videoStream  = new MediaStream([data.consumer.track]);
                         videoElem.srcObject = videoStream;
                         videoElem.play();
@@ -284,7 +277,6 @@
                         }
 
                         SendMessage("Huddle01Init", "StopVideo",tempRemotePeer.peerId);
-
                     }
                 });
 
@@ -320,9 +312,8 @@
 
         });
         
-        remotePeer.on("stream-playable", async function(data) {
-
-            console.log("stream-playable : ",data);
+        remotePeer.on("stream-playable", async function(data) 
+        {
             if(data.label == "audio")
             {
                 const audioElem = document.createElement("audio");
@@ -334,14 +325,16 @@
                 }
                 
                 const stream  = new MediaStream([data.consumer.track]);
-                console.log("Stream  : ",stream);
-                //audioElem.srcObject = stream;
+                
                 document.body.appendChild(audioElem);
-                //audioElem.play();
+                audioElem.srcObject = stream;
+                audioElem.play();
+                
                 if(peersMap[remotePeer.peerId])
                 {
                     peersMap[remotePeer.peerId].audioStream = stream;
                 }
+
                 SendMessage("Huddle01Init", "OnPeerUnMute",remotePeer.peerId);
 
             }else if(data.label == "video")
@@ -350,6 +343,10 @@
                 videoElem.id = remotePeer.peerId + "_video";
                 console.log("video created : ",videoElem.id);
                 document.body.appendChild(videoElem);
+                //set properties
+                videoElem.style.display = "none";
+                videoElem.style.opacity = 0;
+                //get stream
                 const videoStream  = new MediaStream([data.consumer.track]);
                 videoElem.srcObject = videoStream;
                 videoElem.play();
@@ -363,7 +360,6 @@
             if(data.label == "audio")
             {
                 var audioElem = document.getElementById(remotePeer.peerId+"_audio");
-                console.log("audio on audio close",audioElem);
                 if(audioElem)
                 {
                     audioElem.srcObject = null;
@@ -414,10 +410,9 @@
             }
 
             // delete associated
-            peersMap.delete(UTF8ToString(peerId));
             SendMessage("Huddle01Init", "OnPeerLeft",peerId);     
+            peersMap.delete(UTF8ToString(peerId));
         });
-
     },
 
 
@@ -487,7 +482,30 @@
     
     LeaveRoom : function()
     {
+        for (var entry of Array.from(peersMap.entries()))
+       {
+            var key = entry[0];
+            var value = entry[1];
+            var audioElem = document.getElementById(key+"_audio");
+            //remove element
+            if(audioElem)
+            {
+                audioElem.srcObject = null;
+                audioElem.remove();
+            }
+            var videoElem = document.getElementById(UTF8ToString(peerId) + "_video");
+
+            if(videoElem)
+            {
+                videoElem.remove();
+            }
+       }
+
+       peersMap = new Map();
+
        huddleClient.leaveRoom();
+       SendMessage("Huddle01Init", "OnLeavingRoom");
+       //remove all audio associated
     },
 
     SendTextMessage : function(message)
@@ -540,6 +558,7 @@
         initialVideo.style.opacity = 0;
         initialVideo.style.width = 0;
         initialVideo.style.height = 0;
+        initialVideo.style.display = "none";
         setTimeout(function() {
             initialVideo.play();
         }, 0)
