@@ -41,8 +41,15 @@ namespace Huddle01.Sample
         private GameObject _userOptions;
         [SerializeField]
         private TMP_Text _headerText;
+
+
+        [Header("Input fields")]
         [SerializeField]
         private TMP_InputField _nameInputFeild;
+        [SerializeField]
+        private TMP_InputField _tokenInputFeild;
+        [SerializeField]
+        private TMP_InputField _roomInputFeild;
 
         private bool _selfMicMuteStatus = true;
         private bool _selfVideoEnabled = false;
@@ -257,7 +264,7 @@ namespace Huddle01.Sample
         public void JoinRoom()
         {
             Debug.Log("Join Room Clicked");
-            Huddle01Init.Instance.JoinRoom(_roomId, _token);
+            Huddle01Init.Instance.JoinRoom(_roomInputFeild.text, _tokenInputFeild.text);
         }
 
         public void UpdateLocalPeerMetaData(PeerMetadata peerMetadata)
