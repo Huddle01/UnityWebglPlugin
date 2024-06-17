@@ -1599,8 +1599,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ClickMoveNavAgentRef: {fileID: 525970539}
   LocalPlayer: {fileID: 0}
-  _projectId: KkMMaNmkB5f2zDKco57Z3_i-ZKgnvBPx
-  _apiKey: k_AHxooAiSbiWc12hZiFC6koEGa_s7m5
+  _projectId: 
+  _apiKey: 
   _playerPrefab: {fileID: 9155493486842452978, guid: 481bcabea1bf0eb4aa0377fec5e8b550, type: 3}
   _menuPanel: {fileID: 746226891}
   _inGameOptionsPanel: {fileID: 1068731412}
