@@ -21,7 +21,7 @@ namespace Huddle01
         internal static extern void AttachVideo(string peerId, int m_TextureId);
 
         [DllImport("__Internal")]
-        internal static extern void InitHuddle01WebSdk(string appIdjson);
+        internal static extern void InitHuddle01WebSdk(string appIdjson,bool autoConsume);
 
         [DllImport("__Internal")]
         internal static extern void JoinRoom(string roomId, string token);
@@ -39,7 +39,10 @@ namespace Huddle01
         internal static extern void SendTextMessage(string message);
 
         [DllImport("__Internal")]
-        internal static extern void ConsumePeer(string peerId);
+        internal static extern void ConsumePeer(string peerId,string label);
+
+        [DllImport("__Internal")]
+        internal static extern void StopConsumingPeer(string peerId, string label);
 
         [DllImport("__Internal")]
         internal static extern void UpdatePeerMeataData(string metadataJson);
@@ -71,5 +74,14 @@ namespace Huddle01
         [DllImport("__Internal")]
         internal static extern string DisconnectPeerPanner(string peerId);
 
+        [DllImport("__Internal")]
+        internal static extern string GetAllPeersData();
+
+    }
+
+    public enum LabelType 
+    {
+        audio,
+        video
     }
 }
