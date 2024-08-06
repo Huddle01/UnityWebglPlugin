@@ -39,10 +39,10 @@ namespace Huddle01
         internal static extern void SendTextMessage(string message);
 
         [DllImport("__Internal")]
-        internal static extern void ConsumePeer(string peerId,string label);
+        internal static extern void ConsumePeer(string peerId);
 
         [DllImport("__Internal")]
-        internal static extern void StopConsumingPeer(string peerId, string label);
+        internal static extern void StopConsumingPeer(string peerId);
 
         [DllImport("__Internal")]
         internal static extern void UpdatePeerMeataData(string metadataJson);

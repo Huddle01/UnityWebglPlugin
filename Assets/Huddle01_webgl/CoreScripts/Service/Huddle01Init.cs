@@ -79,14 +79,14 @@ namespace Huddle01
             Huddle01JSNative.SendTextMessage(message);
         }
 
-        public void ConsumerPeer(string peerId,LabelType label)
+        public void ConsumerPeer(string peerId)
         {
-            Huddle01JSNative.ConsumePeer(peerId,label.ToString());
+            Huddle01JSNative.ConsumePeer(peerId);
         }
 
-        public void StopConsumeingPeer(string peerId, LabelType label)
+        public void StopConsumeingPeer(string peerId)
         {
-            Huddle01JSNative.StopConsumingPeer(peerId, label.ToString());
+            Huddle01JSNative.StopConsumingPeer(peerId);
         }
 
         public void GetLocalPeerId()
