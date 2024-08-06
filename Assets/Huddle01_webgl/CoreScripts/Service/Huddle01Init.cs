@@ -47,7 +47,7 @@ namespace Huddle01
         public void Init(string projectId)
         {
             _projectId = projectId;
-            Huddle01JSNative.InitHuddle01WebSdk(_projectId);
+            Huddle01JSNative.InitHuddle01WebSdk(_projectId,true);
         }
 
         public void JoinRoom(string roomId, string token)
@@ -82,6 +82,11 @@ namespace Huddle01
         public void ConsumerPeer(string peerId)
         {
             Huddle01JSNative.ConsumePeer(peerId);
+        }
+
+        public void StopConsumeingPeer(string peerId)
+        {
+            Huddle01JSNative.StopConsumingPeer(peerId);
         }
 
         public void GetLocalPeerId()
