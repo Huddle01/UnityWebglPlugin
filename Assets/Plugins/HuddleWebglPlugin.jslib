@@ -646,6 +646,8 @@
                 SendMessage("Huddle01Init", "ResumeVideo",utfPeerId);
         }
 
+        SendMessage("Huddle01Init", "OnStartingConsumePeerSuccessfully",utfPeerId);
+
     },
 
     StopConsumingPeer : async function(peerId)
@@ -684,6 +686,8 @@
             videoElem.remove();
             SendMessage("Huddle01Init", "StopVideo", utfPeerId);
         }
+
+        SendMessage("Huddle01Init", "OnStopConsumePeerSuccessfully", utfPeerId);
     },
 
     GetAllPeersData : async function()

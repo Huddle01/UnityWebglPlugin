@@ -79,9 +79,4 @@ namespace Huddle01
 
     }
 
-    public enum LabelType 
-    {
-        audio,
-        video
-    }
 }

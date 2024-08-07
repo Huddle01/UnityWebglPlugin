@@ -22,6 +22,8 @@ namespace Huddle01
         public delegate void StopPeerVideoEventHandler(string peerId);
         public delegate void MessageReceivedEventHandler(string data);
         public delegate void LeaveRoomEventHandler();
+        public delegate void StartConsumingPeerEventHandler(string peerId);
+        public delegate void StopConsumingPeerEventHandler(string peerId);
 
         public static event LocalPeerIdEventHandler LocalPeerId;
         public static event PeerAddedEventHandler PeerAdded;
@@ -34,6 +36,8 @@ namespace Huddle01
         public static event StopPeerVideoEventHandler OnStopPeerVideo;
         public static event MessageReceivedEventHandler OnMessageReceived;
         public static event LeaveRoomEventHandler OnLeaveRoom;
+        public static event StartConsumingPeerEventHandler OnStartConsumingPeer;
+        public static event StopConsumingPeerEventHandler OnStopConsumingPeer;
 
         private string _projectId;
         private string _roomId;
@@ -44,12 +48,21 @@ namespace Huddle01
 
         private List<string> _allPeers = new List<string>();
 
-        public void Init(string projectId)
+        public bool AutoConsume =>_autoConsume;
+        private bool _autoConsume = true;
+
+        public void Init(string projectId,bool shouldAutoConsume = true)
         {
             _projectId = projectId;
-            Huddle01JSNative.InitHuddle01WebSdk(_projectId,true);
+            _autoConsume = shouldAutoConsume;
+            Huddle01JSNative.InitHuddle01WebSdk(_projectId, shouldAutoConsume);
         }
 
+        /// <summary>
+        /// Join Room
+        /// </summary>
+        /// <param name="roomId"></param>
+        /// <param name="token"></param>
         public void JoinRoom(string roomId, string token)
         {
             _roomId = roomId;
@@ -57,36 +70,79 @@ namespace Huddle01
             Huddle01JSNative.JoinRoom(_roomId, _token);
         }
 
+        /// <summary>
+        /// Leave current room
+        /// </summary>
         public void LeaveRoom()
         {
             Huddle01JSNative.LeaveRoom();
         }
 
+        /// <summary>
+        /// Toggle Mute Mic
+        /// </summary>
+        /// <param name="shouldMute"></param>
+        /// <param name="metadata"></param>
         public void MuteMic(bool shouldMute, PeerMetadata metadata)
         {
-            Debug.Log($"Mute mic : {JsonConvert.SerializeObject(metadata)}");
+           // Debug.Log($"Mute mic : {JsonConvert.SerializeObject(metadata)}");
             Huddle01JSNative.MuteMic(shouldMute, JsonConvert.SerializeObject(metadata));
         }
 
+        /// <summary>
+        /// Toggle local peer video
+        /// </summary>
+        /// <param name="enable"></param>
+        /// <param name="metadata"></param>
         public void EnableVideo(bool enable, PeerMetadata metadata) 
         {
-            Debug.Log($"EnableVideo : {JsonConvert.SerializeObject(metadata)}");
+            //Debug.Log($"EnableVideo : {JsonConvert.SerializeObject(metadata)}");
             Huddle01JSNative.EnableVideo(enable, JsonConvert.SerializeObject(metadata));
         }
 
+        /// <summary>
+        /// Send message to room
+        /// </summary>
+        /// <param name="message"></param>
         public void SendTextMessage(string message)
         {
             Huddle01JSNative.SendTextMessage(message);
         }
 
-        public void ConsumerPeer(string peerId)
+        /// <summary>
+        /// Start consuming peer
+        /// not supported when AutoConsume is true
+        /// </summary>
+        /// <param name="peerId"></param>
+        public void StartConsumerPeer(string peerId)
         {
-            Huddle01JSNative.ConsumePeer(peerId);
+            if (!_autoConsume)
+            {
+                Huddle01JSNative.ConsumePeer(peerId);
+            }
+            else 
+            {
+                Debug.LogWarning("Consuming peer not supported with AutoConsume mode");
+            }
+            
         }
 
+        /// <summary>
+        /// Stop consuming peer
+        /// not supported when AutoConsume is true 
+        /// </summary>
+        /// <param name="peerId"></param>
         public void StopConsumeingPeer(string peerId)
         {
-            Huddle01JSNative.StopConsumingPeer(peerId);
+            if (!_autoConsume)
+            {
+                Huddle01JSNative.StopConsumingPeer(peerId);
+            }
+            else
+            {
+                Debug.LogWarning("StopConsumeingPeer peer not supported with AutoConsume mode");
+            }
+
         }
 
         public void GetLocalPeerId()
@@ -134,56 +190,55 @@ namespace Huddle01
             Huddle01JSNative.DisconnectPeerPanner(peerId);
         }
 
-
         #region Callbacks
 
         public void OnRoomJoined()
         {
-            Debug.Log("Room Joined");
+           // Debug.Log("Room Joined");
             OnJoinRoom?.Invoke();
         }
 
         public void OnLocalPeerIdReceived(string peerId)
         {
-            Debug.Log($"OnLocalPeerIdReceived {peerId}");
+           // Debug.Log($"OnLocalPeerIdReceived {peerId}");
             LocalPeerId?.Invoke(peerId);
         }
 
         public void OnPeerAdded(string peerInfo)
         {
-            Debug.Log($"OnPeerAdded {peerInfo}");
+           // Debug.Log($"OnPeerAdded {peerInfo}");
             if (!_allPeers.Contains(peerInfo)) _allPeers.Add(peerInfo);
             PeerAdded?.Invoke(peerInfo);
         }
 
         public void OnPeerLeft(string peerInfo)
         {
-            Debug.Log($"OnPeerLeft {peerInfo}");
+           // Debug.Log($"OnPeerLeft {peerInfo}");
             if (!_allPeers.Contains(peerInfo)) _allPeers.Remove(peerInfo);
             PeerLeft?.Invoke(peerInfo);
         }
 
         public void OnPeerMute(string peerId)
         {
-            Debug.Log($"OnPeerMute {peerId}");
+            //Debug.Log($"OnPeerMute {peerId}");
             PeerMuted?.Invoke(peerId,true);
         }
 
         public void OnPeerUnMute(string peerId)
         {
-            Debug.Log($"OnPeerMute {peerId}");
+            //Debug.Log($"OnPeerMute {peerId}");
             PeerMuted?.Invoke(peerId,false);
         }
 
         public void OnRoomClosed()
         {
-            Debug.Log($"OnRoomClosed");
+            //Debug.Log($"OnRoomClosed");
             RoomClosed?.Invoke();
         }
 
         public void OnPeerMetadataUpdated(string peerInfo)
         {
-            Debug.Log($"peerInfo {peerInfo}");
+           //Debug.Log($"peerInfo {peerInfo}");
             PeerMetadata response = JsonConvert.DeserializeObject<PeerMetadata>(peerInfo);
             PeerMetadata?.Invoke(response);
         }
@@ -200,14 +255,24 @@ namespace Huddle01
 
         public void MessageReceived(string data)
         {
-            Debug.Log($"Message received : {data}");
+           // Debug.Log($"Message received : {data}");
             OnMessageReceived?.Invoke(data);
         }
 
         public void OnLeavingRoom() 
         {
-            Debug.Log($"Message received");
+            //Debug.Log($"Message received");
             OnLeaveRoom.Invoke();
+        }
+
+        public void OnStartingConsumePeerSuccessfully(string peerId) 
+        {
+            OnStartConsumingPeer?.Invoke(peerId);
+        }
+
+        public void OnStopConsumePeerSuccessfully(string peerId)
+        {
+            OnStopConsumingPeer?.Invoke(peerId);
         }
 
         #endregion
