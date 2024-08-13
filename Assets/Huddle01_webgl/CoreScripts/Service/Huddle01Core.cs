@@ -9,7 +9,7 @@ using Huddle01.Services;
 
 namespace Huddle01 
 {
-    public class Huddle01Init : Singleton<Huddle01Init>
+    public class Huddle01Core : Singleton<Huddle01Core>
     {
         public delegate void LocalPeerIdEventHandler(string peerId);
         public delegate void PeerAddedEventHandler(string peerInfo);
