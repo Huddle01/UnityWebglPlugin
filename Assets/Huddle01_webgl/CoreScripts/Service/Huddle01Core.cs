@@ -102,11 +102,30 @@ namespace Huddle01
 
         /// <summary>
         /// Send message to room
+        /// pass peerId or * to send to all peers 
         /// </summary>
         /// <param name="message"></param>
-        public void SendTextMessage(string message)
+        public void SendData(string to,string message,string label)
         {
-            Huddle01JSNative.SendTextMessage(message);
+            if (to.Equals("*"))
+            {
+                Huddle01JSNative.SendTextMessage(message, label);
+            }
+            else 
+            {
+                SendData(new List<string> { to},message,label);
+            }
+        }
+
+        /// <summary>
+        /// Send message to peers in the room
+        /// Peers which are present in peerIds list will receive the data
+        /// </summary>
+        /// <param name="message"></param>
+        public void SendData(List<string> peerIds,string message, string label)
+        {
+            string[] peerIdArray = peerIds.ToArray();
+            Huddle01JSNative.SendTextMessageToPeers(message, peerIdArray, peerIdArray.Length, label);
         }
 
         /// <summary>

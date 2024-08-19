@@ -36,7 +36,10 @@ namespace Huddle01
         internal static extern void EnableVideo(bool enable, string metaData);
 
         [DllImport("__Internal")]
-        internal static extern void SendTextMessage(string message);
+        internal static extern void SendTextMessage(string message, string label);
+
+        [DllImport("__Internal")]
+        internal static extern void SendTextMessageToPeers(string message,string[] peerIds,int size,string label);
 
         [DllImport("__Internal")]
         internal static extern void ConsumePeer(string peerId);

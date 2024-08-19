@@ -312,7 +312,7 @@ namespace Huddle01.Sample
 
         public void SendMessageToRoom() 
         {
-            Huddle01Core.Instance.SendTextMessage("Hello guyzz");
+            Huddle01Core.Instance.SendData("*", "Hello guyzz","chat");
         }
 
         #endregion

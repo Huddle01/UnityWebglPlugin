@@ -87,7 +87,7 @@ public class NavMeshPlayerController : MonoBehaviour
         if (IsLocalPlayer) 
         {
             string posJson = JsonUtility.ToJson(goalPos);
-            Huddle01Core.Instance.SendTextMessage(posJson);
+            Huddle01Core.Instance.SendData("*",posJson,"chat");
         }
     }
 
